@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<title>TikQuran</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--g:#22c55e;--g2:#16a34a;--bg:#000;--s:rgba(255,255,255,.05);--b:rgba(255,255,255,.1);--t:#fff;--t2:rgba(255,255,255,.6);--t3:rgba(255,255,255,.3)}
+body{font-family:'Tajawal',sans-serif;background:#000;color:#fff;overflow:hidden;height:100dvh}
+.qf{font-family:'Amiri',serif}
+
+/* PAGES */
+.page{position:absolute;inset:0;display:none;flex-direction:column;background:#000}
+.page.active{display:flex}
+
+/* TOPBAR */
+.topbar{padding:10px 16px 6px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10}
+.ttab{font-size:15px;color:var(--t3);background:none;border:none;cursor:pointer;font-family:'Tajawal',sans-serif;padding:4px 0;border-bottom:2px solid transparent;transition:.2s}
+.ttab.on{color:#fff;border-bottom-color:#fff}
+.ticon{background:none;border:none;cursor:pointer;color:#fff;display:flex;padding:4px}
+
+/* FEED */
+#feedScroll{flex:1;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.clip{height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.clip-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,rgba(0,0,0,.1) 50%,rgba(0,0,0,.3) 100%);z-index:2}
+.geo{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.03)' stroke-width='1'%3E%3Cpolygon points='40,5 75,27.5 75,52.5 40,75 5,52.5 5,27.5'/%3E%3C/g%3E%3C/svg%3E");z-index:1}
+.viz{position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);z-index:3;text-align:center}
+.bars{display:flex;align-items:flex-end;gap:4px;height:64px;justify-content:center}
+.bar{width:6px;border-radius:4px;background:var(--g);transform-origin:bottom;animation:wv 1.2s ease-in-out infinite}
+.bar:nth-child(1){animation-delay:.0s;height:40%}.bar:nth-child(2){animation-delay:.12s;height:65%}
+.bar:nth-child(3){animation-delay:.24s;height:85%}.bar:nth-child(4){animation-delay:.36s;height:100%}
+.bar:nth-child(5){animation-delay:.48s;height:90%}.bar:nth-child(6){animation-delay:.36s;height:85%}
+.bar:nth-child(7){animation-delay:.24s;height:65%}.bar:nth-child(8){animation-delay:.12s;height:40%}
+.bar.p{animation-play-state:paused}
+@keyframes wv{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+.vinyl{width:44px;height:44px;border-radius:50%;border:3px solid #222;display:flex;align-items:center;justify-content:center;animation:spin 4s linear infinite}
+.vinyl.p{animation-play-state:paused}
+.vi{width:12px;height:12px;border-radius:50%;background:#111}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CLIP BOTTOM */
+.clip-bottom{position:relative;z-index:5;padding:0 14px 90px}
+.clip-row{display:flex;align-items:flex-end;gap:10px}
+.clip-info{flex:1}
+.clip-user{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;border:2px solid var(--g)}
+.fbtn{border:1px solid var(--g);color:var(--g);background:none;border-radius:20px;padding:3px 10px;font-size:11px;font-family:'Tajawal',sans-serif;cursor:pointer}
+.fbtn.on{background:var(--g);color:#000}
+.caption{color:rgba(255,255,255,.75);font-size:13px;margin-bottom:10px}
+.ayah-box{text-align:center;margin-bottom:12px;padding:10px 16px;background:rgba(0,0,0,.4);border-radius:14px;border:1px solid rgba(34,197,94,.2)}
+.ayah-txt{font-size:21px;color:#fff;line-height:1.8;margin-bottom:4px}
+.ayah-ref{font-size:11px;color:var(--g)}
+.prog-row{display:flex;align-items:center;gap:8px}
+.prog-track{flex:1;height:3px;background:rgba(255,255,255,.2);border-radius:2px;cursor:pointer}
+.prog-fill{height:100%;background:var(--g);border-radius:2px;transition:width .1s linear}
+.prog-time{font-size:11px;color:var(--t3);min-width:30px}
+.pbtn{background:none;border:none;color:#fff;cursor:pointer;display:flex;padding:2px}
+
+/* ACTIONS */
+.actions{display:flex;flex-direction:column;align-items:center;gap:16px;padding-bottom:4px}
+.abtn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:#fff;cursor:pointer;font-family:'Tajawal',sans-serif}
+.abtn svg{width:26px;height:26px}
+.albl{font-size:10px;color:rgba(255,255,255,.7)}
+@keyframes hpop{0%{transform:scale(1)}50%{transform:scale(1.5)}100%{transform:scale(1)}}
+.hpop{animation:hpop .3s ease}
+@keyframes fup{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-100px) scale(1.4)}}
+.fh{position:fixed;pointer-events:none;font-size:24px;animation:fup 1.1s ease forwards;z-index:999}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:linear-gradient(to top,rgba(0,0,0,.95),rgba(0,0,0,.8));padding:8px 4px 22px;display:flex;justify-content:space-around;align-items:center;border-top:1px solid var(--b)}
+.nbtn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--t3);cursor:pointer;font-family:'Tajawal',sans-serif;flex:1;padding:4px 0;transition:.2s}
+.nbtn.active{color:#fff}
+.nbtn svg{width:24px;height:24px}
+.nbtn span{font-size:10px}
+.upill{width:48px;height:34px;border-radius:10px;background:var(--g);display:flex;align-items:center;justify-content:center;margin:0 auto 2px;position:relative}
+.upill::before,.upill::after{content:'';position:absolute;top:50%;transform:translateY(-50%);width:8px;height:34px;border-radius:3px;background:#fff}
+.upill::before{left:-10px}.upill::after{right:-10px}
+
+/* COMMENTS SHEET */
+.shovl{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:80;display:none}
+.shovl.open{display:block}
+.sheet{position:fixed;bottom:0;left:0;right:0;z-index:81;background:#111;border-radius:16px 16px 0 0;border-top:1px solid var(--b);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);max-height:75dvh}
+.sheet.open{transform:translateY(0)}
+.sdrag{width:36px;height:4px;border-radius:2px;background:var(--b);margin:10px auto 0}
+.shead{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--b);flex-shrink:0}
+.scmts{flex:1;overflow-y:auto;padding:12px 16px}
+.cmt{display:flex;gap:10px;margin-bottom:16px}
+.cav{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.sinput{display:flex;align-items:center;gap:8px;padding:10px 16px 28px;border-top:1px solid var(--b);flex-shrink:0}
+.sinput input{flex:1;background:rgba(255,255,255,.08);border:none;border-radius:20px;padding:8px 14px;color:#fff;font-size:13px;font-family:'Tajawal',sans-serif;outline:none}
+.sndbtn{background:none;border:none;color:var(--g);font-size:14px;font-family:'Tajawal',sans-serif;cursor:pointer;font-weight:600}
+
+/* UPLOAD */
+.upsh{position:fixed;inset:0;z-index:90;display:none;flex-direction:column;background:#000}
+.upsh.open{display:flex}
+.uph{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--b);flex-shrink:0}
+.upbody{flex:1;overflow-y:auto;padding:20px 16px}
+.upl{font-size:12px;color:var(--t3);margin-bottom:6px}
+.upin{width:100%;background:rgba(255,255,255,.07);border:1px solid var(--b);border-radius:12px;padding:11px 14px;color:#fff;font-size:14px;font-family:'Tajawal',sans-serif;outline:none;margin-bottom:14px}
+.upin:focus{border-color:rgba(34,197,94,.4)}
+.pubbtn{width:100%;padding:14px;border-radius:14px;background:var(--g);color:#000;font-size:15px;font-weight:700;font-family:'Tajawal',sans-serif;border:none;cursor:pointer;margin-top:4px}
+.pubbtn:disabled{opacity:.5}
+
+/* EXPLORE */
+.exp{flex:1;overflow-y:auto;padding:12px}
+.sbar{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border-radius:12px;padding:10px 14px;margin-bottom:16px}
+.sbar input{flex:1;background:none;border:none;color:#fff;font-size:14px;font-family:'Tajawal',sans-serif;outline:none}
+.stitle{font-size:15px;font-weight:600;margin-bottom:10px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.tag{padding:7px 14px;border-radius:20px;font-size:12px;border:1px solid var(--b);cursor:pointer}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tcard{background:rgba(255,255,255,.05);border-radius:12px;padding:14px;cursor:pointer;border:1px solid var(--b)}
+
+/* NOTIFICATIONS */
+.nitem{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05)}
+.nav2{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.ndot{width:8px;height:8px;border-radius:50%;background:var(--g);flex-shrink:0}
+
+/* PROFILE */
+.ppage{flex:1;overflow-y:auto}
+.phdr{padding:20px 16px 0;text-align:center}
+.pav{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#065f46);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px;border:3px solid var(--g)}
+.pstats{display:flex;justify-content:center;gap:28px;margin-bottom:16px}
+.pstat{text-align:center}
+.pstat-n{font-size:18px;font-weight:700}
+.pstat-l{font-size:11px;color:var(--t3)}
+.ptabs{display:flex;border-bottom:1px solid var(--b)}
+.ptab{flex:1;padding:10px;text-align:center;font-size:13px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
+.ptab.on{color:#fff;border-bottom-color:#fff}
+.cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;padding:1px}
+.cthumb{aspect-ratio:9/16;position:relative;overflow:hidden;cursor:pointer;background:#111}
+.cthumb-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px}
+.cthumb-v{position:absolute;bottom:4px;left:4px;font-size:10px;color:#fff;display:flex;align-items:center;gap:2px}
+
+/* PROFILE MENU */
+.pmovl{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:80;display:none}
+.pmenu{position:fixed;bottom:0;left:0;right:0;z-index:81;background:#111;border-radius:16px 16px 0 0;border-top:1px solid var(--b);transform:translateY(100%);transition:transform .3s;padding:8px 0 32px}
+
+/* TOAST */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;z-index:999;border:1px solid var(--b);white-space:nowrap;pointer-events:none;font-family:'Tajawal',sans-serif}
+</style>
+</head>
+<body>
+
+<!-- ══ HOME PAGE ══ -->
+<div class="page active" id="page-home">
+  <div class="topbar" style="position:absolute;top:0;left:0;right:0;background:linear-gradient(to bottom,rgba(0,0,0,.6),transparent)">
+    <button class="ticon" onclick="goLive()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="red" stroke="none"/></svg>
+    </button>
+    <div style="display:flex;gap:20px">
+      <button class="ttab" id="t-following" onclick="switchFeedTab('following',this)">يتابع</button>
+      <button class="ttab on" id="t-foryou" onclick="switchFeedTab('foryou',this)">لك</button>
+    </div>
+    <button class="ticon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </button>
+  </div>
+  <div id="feedScroll" style="flex:1;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
+
+    <!-- CLIP 1 -->
+    <div class="clip" id="clip-0">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,#0d4a35,#050d0a);z-index:0"></div>
+      <div class="geo"></div><div class="clip-overlay"></div>
+      <div class="viz" id="viz-0"><div class="bars" id="bars-0"><div class="bar p"></div><div class="bar p"></div><div class="bar p"></div><div class="bar p"></div><div class="bar p"></div><div class="bar p"></div><div class="bar p"></div><div class="bar p"></div></div></div>
+      <div class="clip-bottom">
+        <div class="ayah-box"><div class="ayah-txt qf">﴿ اللَّهُ نُورُ السَّمَاوَاتِ وَالْأَرْضِ ﴾</div><div class="ayah-ref">سورة النور — الآية ٣٥</div></div>
+        <div class="clip-row">
+          <div class="clip-info">
+            <div class="clip-user">
+              <div class="av" style="background:#064e3b">عب</div>
+              <div><div style="font-size:13px;font-weight:600">عبدالباسط عبدالصمد</div><div style="font-size:11px;color:var(--t3)">تلاوة مرتلة</div></div>
+              <button class="fbtn" onclick="toggleFollow(this)">متابعة</button>
+            </div>
+            <div class="caption">تلاوة خاشعة من سورة النور 🌙</div>
+            <div class="prog-row">
+              <button class="pbtn" onclick="togglePlay('0')"><svg id="pi-0" viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M8 5v14l11-7z"/></svg><svg id="pau-0" viewBox="0 0 24 24" fill="white" width="22" height="22" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button>
+              <div class="prog-track" onclick="seekClip(event,'0')"><div class="prog-fill" id="pf-0" style="width:0%"></div></div>
+              <span class="prog-time" id="pt-0">0:00</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="abtn" onclick="toggleLike(this,'0')"><svg id="hrt-0" viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="albl" id="lc-0">٤٢k</span></button>
+            <button class="abtn" onclick="openComments('0')"><svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="albl">١٢٨</span></button>
+            <button class="abtn" onclick="shareClip()"><svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="albl">مشاركة</span></button>
+            <button class="abtn" onclick="bookmarkClip(this)"><svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span class="albl">حفظ</span></button>
+            <div class="vinyl p" id="vn-0" style="background:conic-gradient(#064e3b,#22c55e,#064e3b,#22c55e)"><div class="vi"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIP 2 -->
+    <div class="clip" id="clip-1">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,#1e1b4b,#050508);z-index:0"></div>
+      <div class="geo"></div><div class="clip-overlay"></div>
+      <div class="viz" id="viz-1"><div style="font-size:48px;margin-bottom:10px;filter:drop-shadow(0 0 16px rgba(139,92,246,.5))">📖</div><div class="bars" id="bars-1"><div class="bar p" style="background:#a78bfa"></div><div class="bar p" style="background:#a78bfa"></div><div class="bar p" style="background:#a78bfa"></div><div class="bar p" style="background:#a78bfa"></div><div class="bar p" style="background:#a78bfa"></div><div class="bar p" style="background:#a78bfa"></div><div class="bar p" style="background:#a78bfa"></div><div class="bar p" style="background:#a78bfa"></div></div></div>
+      <div class="clip-bottom">
+        <div class="ayah-box" style="border-color:rgba(139,92,246,.25)"><div class="ayah-txt qf">﴿ وَعَسَىٰ أَن تَكْرَهُوا شَيْئًا وَهُوَ خَيْرٌ لَّكُمْ ﴾</div><div class="ayah-ref" style="color:#a78bfa">سورة البقرة — الآية ٢١٦</div></div>
+        <div class="clip-row">
+          <div class="clip-info">
+            <div class="clip-user">
+              <div class="av" style="background:#3730a3;border-color:#a78bfa">مش</div>
+              <div><div style="font-size:13px;font-weight:600">مشاري العفاسي</div><div style="font-size:11px;color:var(--t3)">تلاوة مجوّدة</div></div>
+              <button class="fbtn" style="border-color:#a78bfa;color:#a78bfa" onclick="toggleFollow(this)">متابعة</button>
+            </div>
+            <div class="caption">ربما يكره الإنسان شيئاً وفيه خيره ✨</div>
+            <div class="prog-row">
+              <button class="pbtn" onclick="togglePlay('1')"><svg id="pi-1" viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M8 5v14l11-7z"/></svg><svg id="pau-1" viewBox="0 0 24 24" fill="white" width="22" height="22" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button>
+              <div class="prog-track" onclick="seekClip(event,'1')"><div class="prog-fill" id="pf-1" style="width:0%;background:#a78bfa"></div></div>
+              <span class="prog-time" id="pt-1">0:00</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="abtn" onclick="toggleLike(this,'1')"><svg id="hrt-1" viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="albl" id="lc-1">٨٩k</span></button>
+            <button class="abtn" onclick="openComments('1')"><svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="albl">٣٤١</span></button>
+            <button class="abtn" onclick="shareClip()"><svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="albl">مشاركة</span></button>
+            <button class="abtn" onclick="bookmarkClip(this)"><svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span class="albl">حفظ</span></button>
+            <div class="vinyl p" id="vn-1" style="background:conic-gradient(#1e1b4b,#7c3aed,#1e1b4b,#7c3aed)"><div class="vi"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIP 3 -->
+    <div class="clip" id="clip-2">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 60%,#451a03,#0a0500);z-index:0"></div>
+      <div class="geo"></div><div class="clip-overlay"></div>
+      <div class="viz" id="viz-2"><div style="font-size:48px;margin-bottom:10px">🌟</div><div class="bars" id="bars-2"><div class="bar p" style="background:#fbbf24"></div><div class="bar p" style="background:#fbbf24"></div><div class="bar p" style="background:#fbbf24"></div><div class="bar p" style="background:#fbbf24"></div><div class="bar p" style="background:#fbbf24"></div><div class="bar p" style="background:#fbbf24"></div><div class="bar p" style="background:#fbbf24"></div><div class="bar p" style="background:#fbbf24"></div></div></div>
+      <div class="clip-bottom">
+        <div class="ayah-box" style="border-color:rgba(251,191,36,.2)"><div class="ayah-txt qf">﴿ إِنَّ اللَّهَ مَعَ الصَّابِرِينَ ﴾</div><div class="ayah-ref" style="color:#fbbf24">سورة البقرة — الآية ١٥٣</div></div>
+        <div class="clip-row">
+          <div class="clip-info">
+            <div class="clip-user">
+              <div class="av" style="background:#78350f;border-color:#fbbf24">سد</div>
+              <div><div style="font-size:13px;font-weight:600">سعد الغامدي</div><div style="font-size:11px;color:var(--t3)">رواية حفص</div></div>
+              <button class="fbtn" style="border-color:#fbbf24;color:#fbbf24" onclick="toggleFollow(this)">متابعة</button>
+            </div>
+            <div class="caption">اصبر.. الله معك 🤲</div>
+            <div class="prog-row">
+              <button class="pbtn" onclick="togglePlay('2')"><svg id="pi-2" viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M8 5v14l11-7z"/></svg><svg id="pau-2" viewBox="0 0 24 24" fill="white" width="22" height="22" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button>
+              <div class="prog-track" onclick="seekClip(event,'2')"><div class="prog-fill" id="pf-2" style="width:0%;background:#fbbf24"></div></div>
+              <span class="prog-time" id="pt-2">0:00</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="abtn" onclick="toggleLike(this,'2')"><svg id="hrt-2" viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="albl" id="lc-2">١٢٠k</span></button>
+            <button class="abtn" onclick="openComments('2')"><svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="albl">٥٦٧</span></button>
+            <button class="abtn" onclick="shareClip()"><svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="albl">مشاركة</span></button>
+            <button class="abtn" onclick="bookmarkClip(this)"><svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span class="albl">حفظ</span></button>
+            <div class="vinyl p" id="vn-2" style="background:conic-gradient(#451a03,#d97706,#451a03,#d97706)"><div class="vi"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ EXPLORE PAGE ══ -->
+<div class="page" id="page-explore">
+  <div class="topbar" style="border-bottom:1px solid var(--b);flex-shrink:0"><span style="font-size:17px;font-weight:700">اكتشاف</span></div>
+  <div class="exp">
+    <div class="sbar"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" width="18" height="18"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" placeholder="ابحث عن سورة أو قارئ..."/></div>
+    <div class="stitle">موضوعات</div>
+    <div class="tags">
+      <div class="tag" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:var(--g)"># الصبر</div>
+      <div class="tag"># الشكر</div><div class="tag"># الدعاء</div><div class="tag"># الجنة</div>
+      <div class="tag"># التوبة</div><div class="tag"># الرحمة</div><div class="tag"># الأمل</div>
+    </div>
+    <div class="stitle">الأكثر مشاهدة</div>
+    <div class="tgrid">
+      <div class="tcard"><div style="font-size:11px;color:var(--g);margin-bottom:4px">٢.٤M مشاهدة</div><div style="font-size:13px;font-weight:600">سورة الرحمن</div><div style="font-size:11px;color:var(--t3)">عبدالباسط عبدالصمد</div></div>
+      <div class="tcard"><div style="font-size:11px;color:var(--g);margin-bottom:4px">١.٨M مشاهدة</div><div style="font-size:13px;font-weight:600">سورة الكهف</div><div style="font-size:11px;color:var(--t3)">مشاري العفاسي</div></div>
+      <div class="tcard"><div style="font-size:11px;color:var(--g);margin-bottom:4px">١.٢M مشاهدة</div><div style="font-size:13px;font-weight:600">آية الكرسي</div><div style="font-size:11px;color:var(--t3)">سعد الغامدي</div></div>
+      <div class="tcard"><div style="font-size:11px;color:var(--g);margin-bottom:4px">٩٨٠k مشاهدة</div><div style="font-size:13px;font-weight:600">سورة يس</div><div style="font-size:11px;color:var(--t3)">محمد المنشاوي</div></div>
+    </div>
+    <div style="height:80px"></div>
+  </div>
+</div>
+
+<!-- ══ NOTIFICATIONS PAGE ══ -->
+<div class="page" id="page-notif">
+  <div class="topbar" style="border-bottom:1px solid var(--b);flex-shrink:0"><span style="font-size:17px;font-weight:700">الإشعارات</span></div>
+  <div style="flex:1;overflow-y:auto">
+    <div style="padding:10px 16px;font-size:12px;color:var(--g);font-weight:600">جديد</div>
+    <div class="nitem"><div class="nav2" style="background:#064e3b">عب</div><div style="flex:1;font-size:13px;color:rgba(255,255,255,.8)"><b>عبدالباسط</b> بدأ البث المباشر<br><span style="font-size:11px;color:var(--t3)">منذ ٥ دقائق</span></div><div class="ndot"></div></div>
+    <div class="nitem"><div class="nav2" style="background:#1e1b4b">فا</div><div style="flex:1;font-size:13px;color:rgba(255,255,255,.8)"><b>فاطمة</b> أعجبها مقطعك<br><span style="font-size:11px;color:var(--t3)">منذ ١٢ دقيقة</span></div><div class="ndot"></div></div>
+    <div class="nitem"><div class="nav2" style="background:#3730a3">مش</div><div style="flex:1;font-size:13px;color:rgba(255,255,255,.8)"><b>مشاري العفاسي</b> بدأ يتابعك<br><span style="font-size:11px;color:var(--t3)">منذ ٣٠ دقيقة</span></div><div class="ndot"></div></div>
+    <div style="padding:10px 16px;font-size:12px;color:var(--t3);font-weight:600">سابقاً</div>
+    <div class="nitem"><div class="nav2" style="background:#78350f">سد</div><div style="flex:1;font-size:13px;color:rgba(255,255,255,.8)"><b>سعد الغامدي</b> علّق على مقطعك<br><span style="font-size:11px;color:var(--t3)">أمس</span></div></div>
+    <div style="height:80px"></div>
+  </div>
+</div>
+
+<!-- ══ PROFILE PAGE ══ -->
+<div class="page" id="page-profile">
+  <!-- GUEST -->
+  <div id="p-guest" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 24px;text-align:center">
+    <div style="width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.06);border:2px dashed rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" width="38" height="38"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:8px">سجّل دخولك</div>
+    <div style="font-size:14px;color:var(--t3);line-height:1.7;margin-bottom:32px">أنشئ حساباً للاستمتاع بكل مميزات TikQuran</div>
+    <button onclick="location.href='auth.html'" style="width:100%;max-width:300px;padding:14px;border-radius:14px;background:var(--g);color:#000;font-size:15px;font-weight:700;font-family:'Tajawal',sans-serif;border:none;cursor:pointer;margin-bottom:12px">إنشاء حساب / تسجيل دخول</button>
+    <button onclick="location.href='auth.html#login'" style="width:100%;max-width:300px;padding:13px;border-radius:14px;background:transparent;color:var(--t2);font-size:14px;font-family:'Tajawal',sans-serif;border:1px solid var(--b);cursor:pointer">لديّ حساب — تسجيل الدخول</button>
+  </div>
+  <!-- LOGGED IN -->
+  <div id="p-user" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+    <div class="topbar" style="border-bottom:1px solid var(--b);flex-shrink:0">
+      <div style="width:22px"></div>
+      <span style="font-size:15px;font-weight:700" id="p-handle">@حسابي</span>
+      <button onclick="openPMenu()" style="background:none;border:none;color:#fff;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+    </div>
+    <div class="ppage">
+      <div class="phdr">
+        <div class="pav" id="p-av">🧔</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:2px" id="p-name">—</div>
+        <div style="font-size:13px;color:var(--t3);margin-bottom:14px" id="p-handle2">@—</div>
+        <div class="pstats">
+          <div class="pstat"><div class="pstat-n" id="ps-clips">٠</div><div class="pstat-l">مقطع</div></div>
+          <div class="pstat"><div class="pstat-n" id="ps-fol">٠</div><div class="pstat-l">متابِع</div></div>
+          <div class="pstat"><div class="pstat-n" id="ps-fing">٠</div><div class="pstat-l">يتابع</div></div>
+          <div class="pstat"><div class="pstat-n" id="ps-likes">٠</div><div class="pstat-l">إعجاب</div></div>
+        </div>
+        <button style="border:1px solid var(--b);background:none;color:#fff;border-radius:8px;padding:8px 24px;font-size:13px;font-family:'Tajawal',sans-serif;cursor:pointer;margin-bottom:16px">تعديل الملف الشخصي</button>
+      </div>
+      <div class="ptabs">
+        <div class="ptab on" onclick="switchPTab('clips',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="margin:0 auto"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+        <div class="ptab" onclick="switchPTab('liked',this)"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" width="18" height="18" style="margin:0 auto"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+        <div class="ptab" onclick="switchPTab('saved',this)"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" width="18" height="18" style="margin:0 auto"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+      </div>
+      <div id="pt-clips"><div style="padding:40px 20px;text-align:center;color:var(--t3);font-size:13px">لا توجد مقاطع بعد</div></div>
+      <div id="pt-liked" style="display:none"><div style="padding:40px 20px;text-align:center;color:var(--t3);font-size:13px">لا توجد مقاطع معجب بها</div></div>
+      <div id="pt-saved" style="display:none"><div style="padding:40px 20px;text-align:center;color:var(--t3);font-size:13px">لا توجد مقاطع محفوظة</div></div>
+      <div style="height:80px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BOTTOM NAV ══ -->
+<div class="bnav">
+  <button class="nbtn active" id="nb-home" onclick="navTo('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>الرئيسية</span></button>
+  <button class="nbtn" id="nb-explore" onclick="navTo('explore')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>اكتشاف</span></button>
+  <button class="nbtn" style="flex:0 0 60px" onclick="openUpload()"><div class="upill"><svg viewBox="0 0 24 24" fill="white" width="20" height="20"><path d="M12 5v14M5 12l7-7 7 7"/></svg></div><span style="font-size:10px;color:var(--t3)">رفع</span></button>
+  <button class="nbtn" id="nb-notif" onclick="navTo('notif')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>إشعارات</span></button>
+  <button class="nbtn" id="nb-profile" onclick="navTo('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>حسابي</span></button>
+</div>
+
+<!-- ══ COMMENTS SHEET ══ -->
+<div class="shovl" id="cmtOvl" onclick="closeComments()"></div>
+<div class="sheet" id="cmtSheet">
+  <div class="sdrag"></div>
+  <div class="shead"><span style="font-size:14px;font-weight:600" id="cmtTitle">تعليقات</span><button onclick="closeComments()" style="background:none;border:none;color:#fff;cursor:pointer"><svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="scmts" id="cmtList"></div>
+  <div class="sinput"><div style="width:32px;height:32px;border-radius:50%;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0" id="cmtAv">🧔</div><input type="text" placeholder="أضف تعليقاً..." id="cmtInput"/><button class="sndbtn" onclick="sendComment()">نشر</button></div>
+</div>
+
+<!-- ══ UPLOAD SHEET ══ -->
+<div class="upsh" id="upSheet">
+  <div class="uph"><button onclick="closeUpload()" style="background:none;border:none;color:#fff;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:14px">إلغاء</button><h2 style="flex:1;text-align:center;font-size:16px;font-weight:600">مقطع جديد</h2><div style="width:44px"></div></div>
+  <div class="upbody">
+    <input type="file" accept="video/*" id="uFile" style="display:none" onchange="fileChosen(this)"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <button onclick="document.getElementById('uFile').click()" style="background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:14px;padding:18px 10px;color:#fff;font-family:'Tajawal',sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px" id="btnPick">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.8" width="28" height="28"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span style="font-size:13px;font-weight:600">اختر فيديو / صوت</span>
+        <span style="font-size:10px;color:var(--t3)">من الاستوديو</span>
+      </button>
+      <div id="filePreview" style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);border-radius:14px;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:100px">
+        <div style="font-size:28px">📁</div>
+        <div style="font-size:11px;color:var(--t3);text-align:center" id="fileName">لم يتم الاختيار</div>
+      </div>
+    </div>
+    <div id="mediaWrap" style="display:none;margin-bottom:16px;border-radius:12px;overflow:hidden">
+      <video id="prevVid" controls playsinline style="width:100%;max-height:240px;display:none;background:#000"></video>
+      <audio id="prevAud" controls style="width:100%;display:none"></audio>
+    </div>
+    <div class="upl">الوصف</div>
+    <input type="text" class="upin" placeholder="اكتب وصفاً للمقطع..." id="uDesc"/>
+    <div id="upErr" style="color:#ef4444;font-size:12px;margin-bottom:10px;display:none">⚠ يرجى اختيار ملف أولاً</div>
+    <button class="pubbtn" id="pubBtn" onclick="publishClip()">نشر المقطع ✓</button>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- ══ PROFILE MENU ══ -->
+<div class="pmovl" id="pmOvl" onclick="closePMenu()"></div>
+<div class="pmenu" id="pmSheet">
+  <div style="width:36px;height:4px;border-radius:2px;background:var(--b);margin:10px auto 16px"></div>
+  <button onclick="doSignOut()" style="width:100%;display:flex;align-items:center;gap:14px;padding:14px 20px;background:none;border:none;color:#ef4444;font-size:15px;font-family:'Tajawal',sans-serif;cursor:pointer;border-top:1px solid var(--b)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>تسجيل الخروج</button>
+  <button onclick="closePMenu()" style="width:100%;padding:14px;background:none;border:none;color:var(--t3);font-size:14px;font-family:'Tajawal',sans-serif;cursor:pointer">إلغاء</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════ STATE ══════════════
+var S = {
+  playing:{}, timers:{}, liked:{}, bookmarked:{}, following:{},
+  activeComment: null,
+  comments:{
+    '0':[{av:'عب',bg:'#064e3b',txt:'سبحان الله، تلاوة تهز القلب',t:'منذ ٢ ساعة'},
+         {av:'فا',bg:'#831843',txt:'جزاك الله خيراً',t:'منذ ٥ ساعات'}],
+    '1':[{av:'نو',bg:'#065f46',txt:'هذه الآية عزّتني كثيراً',t:'منذ ٣ ساعات'}],
+    '2':[{av:'عم',bg:'#78350f',txt:'هذه الآية تريح القلب',t:'منذ ١ ساعة'}]
+  }
+};
+
+// ══════════════ NAVIGATION ══════════════
+function navTo(page) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nbtn').forEach(function(b){ b.classList.remove('active'); });
+  var pg = document.getElementById('page-'+page);
+  if(pg) pg.classList.add('active');
+  var nb = document.getElementById('nb-'+page);
+  if(nb) nb.classList.add('active');
+  if(page === 'profile') renderProfile();
+}
+
+function switchFeedTab(tab, btn) {
+  document.querySelectorAll('.ttab').forEach(function(t){ t.classList.remove('on'); });
+  btn.classList.add('on');
+  showToast(tab === 'following' ? 'عرض المتابَعين' : 'عرض "لك"');
+}
+
+// ══════════════ PLAY / PAUSE ══════════════
+function togglePlay(idx) {
+  if(S.playing[idx]) { pauseClip(idx); } else {
+    Object.keys(S.playing).forEach(function(i){ if(S.playing[i]) pauseClip(i); });
+    playClip(idx);
+  }
+}
+
+function playClip(idx) {
+  S.playing[idx] = true;
+  var pi = document.getElementById('pi-'+idx);
+  var pa = document.getElementById('pau-'+idx);
+  var vn = document.getElementById('vn-'+idx);
+  if(pi) pi.style.display = 'none';
+  if(pa) pa.style.display = 'block';
+  if(vn) vn.classList.remove('p');
+  var barsEl = document.getElementById('bars-'+idx);
+  if(barsEl) document.querySelectorAll('#bars-'+idx+' .bar').forEach(function(b){ b.classList.remove('p'); });
+  var realMedia = S.mediaEls && S.mediaEls[idx];
+  if(realMedia) { realMedia.play().catch(function(){}); return; }
+  var pct = parseFloat((document.getElementById('pf-'+idx)||{}).style&&document.getElementById('pf-'+idx).style.width) || 0;
+  S.timers[idx] = setInterval(function(){
+    pct = Math.min(100, pct + 0.25);
+    var el = document.getElementById('pf-'+idx);
+    if(el) el.style.width = pct+'%';
+    var sec = Math.round((pct/100)*210);
+    var m = Math.floor(sec/60), s = sec%60;
+    var tel = document.getElementById('pt-'+idx);
+    if(tel) tel.textContent = m+':'+(s<10?'0':'')+s;
+    if(pct >= 100) { pauseClip(idx); if(el) el.style.width='0%'; }
+  }, 100);
+}
+
+function pauseClip(idx) {
+  S.playing[idx] = false;
+  clearInterval(S.timers[idx]);
+  var pi = document.getElementById('pi-'+idx);
+  var pa = document.getElementById('pau-'+idx);
+  var vn = document.getElementById('vn-'+idx);
+  if(pi) pi.style.display = 'block';
+  if(pa) pa.style.display = 'none';
+  if(vn) vn.classList.add('p');
+  var barsEl2 = document.getElementById('bars-'+idx);
+  if(barsEl2) document.querySelectorAll('#bars-'+idx+' .bar').forEach(function(b){ b.classList.add('p'); });
+  var realMedia = S.mediaEls && S.mediaEls[idx];
+  if(realMedia) realMedia.pause();
+}
+
+function seekClip(e, idx) {
+  var rect = e.currentTarget.getBoundingClientRect();
+  var pct = ((e.clientX - rect.left) / rect.width) * 100;
+  var el = document.getElementById('pf-'+idx);
+  if(el) el.style.width = pct+'%';
+  var realMedia = S.mediaEls && S.mediaEls[idx];
+  if(realMedia && realMedia.duration) realMedia.currentTime = (pct/100) * realMedia.duration;
+}
+
+// Pause on scroll
+document.getElementById('feedScroll').addEventListener('scroll', function(){
+  clearTimeout(window._scrollT);
+  window._scrollT = setTimeout(function(){
+    Object.keys(S.playing).forEach(function(i){ if(S.playing[i]) pauseClip(i); });
+  }, 150);
+});
+
+// ══════════════ INTERACTIONS ══════════════
+function toggleLike(btn, idx) {
+  S.liked[idx] = !S.liked[idx];
+  var h = document.getElementById('hrt-'+idx);
+  if(S.liked[idx]) {
+    h.setAttribute('fill','#ef4444'); h.setAttribute('stroke','#ef4444');
+    btn.classList.add('hpop'); setTimeout(function(){ btn.classList.remove('hpop'); }, 300);
+    spawnHeart(btn); showToast('أعجبك هذا المقطع ❤️');
+  } else {
+    h.setAttribute('fill','none'); h.setAttribute('stroke','white');
+  }
+}
+
+function spawnHeart(btn) {
+  var r = btn.getBoundingClientRect();
+  var h = document.createElement('div');
+  h.className = 'fh';
+  h.style.left = (r.left + Math.random()*20-10)+'px';
+  h.style.top = r.top+'px';
+  h.textContent = '❤️';
+  document.body.appendChild(h);
+  setTimeout(function(){ h.remove(); }, 1100);
+}
+
+function toggleFollow(btn) {
+  var on = btn.dataset.f === '1';
+  btn.dataset.f = on ? '0' : '1';
+  btn.textContent = on ? 'متابعة' : 'يتابع';
+  btn.classList.toggle('on', !on);
+  showToast(on ? 'تم إلغاء المتابعة' : 'تمت المتابعة ✓');
+}
+
+function bookmarkClip(btn) {
+  var sv = btn.dataset.s === '1';
+  btn.dataset.s = sv ? '0' : '1';
+  var svg = btn.querySelector('svg');
+  if(svg) svg.setAttribute('fill', sv ? 'none' : 'white');
+  showToast(sv ? 'تم إلغاء الحفظ' : 'تم الحفظ ✓');
+}
+
+function shareClip() { showToast('تم نسخ رابط المقطع 🔗'); }
+function goLive() { showToast('ميزة البث المباشر قريباً 🎙️'); }
+
+// ══════════════ COMMENTS ══════════════
+function openComments(idx) {
+  S.activeComment = idx;
+  var cmts = S.comments[idx] || [];
+  document.getElementById('cmtTitle').textContent = cmts.length + ' تعليق';
+  var list = document.getElementById('cmtList');
+  list.innerHTML = cmts.map(function(c){
+    return '<div class="cmt"><div class="cav" style="background:'+c.bg+'">'+c.av+'</div><div><div style="font-size:13px;color:rgba(255,255,255,.85)">'+c.txt+'</div><div style="font-size:11px;color:var(--t3);margin-top:2px">'+c.t+'</div></div></div>';
+  }).join('');
+  document.getElementById('cmtOvl').classList.add('open');
+  document.getElementById('cmtSheet').classList.add('open');
+}
+
+function closeComments() {
+  document.getElementById('cmtOvl').classList.remove('open');
+  document.getElementById('cmtSheet').classList.remove('open');
+}
+
+function sendComment() {
+  var inp = document.getElementById('cmtInput');
+  var txt = inp.value.trim();
+  if(!txt) return;
+  var idx = S.activeComment;
+  if(!S.comments[idx]) S.comments[idx] = [];
+  S.comments[idx].unshift({av:'أن',bg:'#064e3b',txt:txt,t:'الآن'});
+  openComments(idx);
+  inp.value = '';
+  showToast('تم نشر تعليقك ✓');
+}
+
+// ══════════════ UPLOAD ══════════════
+function openUpload() { document.getElementById('upSheet').classList.add('open'); }
+function closeUpload() {
+  document.getElementById('upSheet').classList.remove('open');
+  document.getElementById('uFile').value = '';
+  document.getElementById('uDesc').value = '';
+  document.getElementById('fileName').textContent = 'لم يتم الاختيار';
+  document.getElementById('mediaWrap').style.display = 'none';
+  document.getElementById('prevVid').src = '';
+  document.getElementById('prevAud').src = '';
+  document.getElementById('btnPick').style.borderColor = '';
+  document.getElementById('upErr').style.display = 'none';
+  window._upFile = null;
+  window._upURL = null;
+  window._isVid = false;
+}
+
+function fileChosen(input) {
+  var f = input.files[0];
+  if(!f) return;
+  // reject non-video
+  if(!f.type.startsWith('video/')) {
+    showToast('يرجى اختيار ملف فيديو فقط (MP4, MOV...)');
+    input.value = '';
+    return;
+  }
+  window._upFile = f;
+  window._isVid = true;
+  if(window._upURL) URL.revokeObjectURL(window._upURL);
+  window._upURL = URL.createObjectURL(f);
+  document.getElementById('fileName').textContent = f.name.slice(0,25) + (f.name.length>25?'...':'') + ' ✓';
+  document.getElementById('filePreview').style.background = 'rgba(34,197,94,.1)';
+  document.getElementById('filePreview').style.borderColor = '#22c55e';
+  var wrap = document.getElementById('mediaWrap');
+  var vid = document.getElementById('prevVid');
+  var aud = document.getElementById('prevAud');
+  aud.style.display = 'none'; aud.src = '';
+  vid.src = window._upURL;
+  vid.style.display = 'block';
+  wrap.style.display = 'block';
+}
+
+async function publishClip() {
+  if(!window._upFile) { document.getElementById('upErr').style.display='block'; return; }
+  document.getElementById('upErr').style.display = 'none';
+  var btn = document.getElementById('pubBtn');
+  btn.disabled = true; btn.textContent = 'جاري النشر...';
+  var safety = setTimeout(function(){ btn.disabled=false; btn.textContent='نشر المقطع ✓'; }, 8000);
+  var desc = document.getElementById('uDesc').value.trim();
+  var bgs = ['radial-gradient(ellipse at 30% 40%,#0d4a35,#050d0a)','radial-gradient(ellipse at 70% 30%,#1e1b4b,#050508)','radial-gradient(ellipse at 40% 60%,#451a03,#0a0500)','radial-gradient(ellipse at 60% 50%,#1a1a3e,#050508)'];
+  var clip = {
+    desc: desc,
+    uid: window._fbUser ? window._fbUser.uid : null,
+    name: (window._fbUserData && window._fbUserData.name) || (window._fbUser && window._fbUser.displayName) || 'مجهول',
+    avatar: (window._fbUserData && window._fbUserData.avatar) || '🧔',
+    username: (window._fbUserData && window._fbUserData.username) || 'user',
+    isVideo: !!window._isVid,
+    localURL: window._upURL,
+    likes:0, comments:0, createdAt: Date.now(),
+    bg: bgs[Math.floor(Math.random()*bgs.length)]
+  };
+  if(window._fbDb && window._fbUser) {
+    try {
+      var dbMod = await import('https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js');
+      var nr = dbMod.push(dbMod.ref(window._fbDb,'clips'));
+      clip.id = nr.key;
+      var forDB = Object.assign({},clip); delete forDB.localURL;
+      await dbMod.update(nr, forDB);
+      var nc = ((window._fbUserData && window._fbUserData.clips)||0)+1;
+      await dbMod.update(dbMod.ref(window._fbDb,'users/'+window._fbUser.uid),{clips:nc});
+      if(window._fbUserData) window._fbUserData.clips = nc;
+      var el = document.getElementById('ps-clips'); if(el) el.textContent = nc;
+    } catch(e){ console.warn('DB:', e.message); }
+  }
+  addClipToFeed(clip);
+  addClipToGrid(clip);
+  clearTimeout(safety);
+  btn.disabled = false; btn.textContent = 'نشر المقطع ✓';
+  showToast('تم نشر مقطعك 🎉');
+  closeUpload();
+}
+
+function addClipToFeed(clip) {
+  var feed = document.getElementById('feedScroll');
+  var idx  = clip.id || ('u'+Date.now());
+  var avBgs = ['#064e3b','#3730a3','#78350f','#1e3a5f'];
+  var avBg  = avBgs[Math.floor(Math.random()*avBgs.length)];
+  var div   = document.createElement('div');
+  div.className = 'clip'; div.id = 'clip-'+idx;
+
+  // Build inner HTML
+  var inner = '';
+
+  // Background (only shows when no video)
+  inner += '<div style="position:absolute;inset:0;background:'+clip.bg+';z-index:0"></div>';
+  inner += '<div class="geo"></div>';
+
+  // VIDEO element — fills screen, plays the real file
+  if(clip.localURL && clip.isVideo) {
+    inner += '<video id="med-'+idx+'" src="'+clip.localURL+'" playsinline preload="metadata"'
+           + ' style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000"></video>';
+    // overlay on top of video
+    inner += '<div class="clip-overlay" style="z-index:2"></div>';
+  } else {
+    inner += '<div class="clip-overlay"></div>';
+    // audio element (hidden)
+    if(clip.localURL) {
+      inner += '<audio id="med-'+idx+'" src="'+clip.localURL+'" preload="metadata" style="display:none"></audio>';
+    }
+    // Visualizer bars for audio
+    inner += '<div class="viz" id="viz-'+idx+'">'
+           + '<div class="bars" id="bars-'+idx+'">'
+           + Array(8).fill('<div class="bar p"></div>').join('')
+           + '</div></div>';
+  }
+
+  // Bottom info layer
+  inner += '<div class="clip-bottom" style="position:relative;z-index:5;padding:0 14px 90px">';
+  if(clip.desc) {
+    inner += '<div class="ayah-box"><div style="font-size:15px;color:#fff;line-height:1.7">'+clip.desc+'</div></div>';
+  }
+  inner += '<div class="clip-row">'
+        +  '<div class="clip-info">'
+        +  '<div class="clip-user">'
+        +  '<div class="av" style="background:'+avBg+'">'+clip.avatar+'</div>'
+        +  '<div><div style="font-size:13px;font-weight:600">'+clip.name+'</div>'
+        +  '<div style="font-size:11px;color:var(--t3)">@'+clip.username+'</div></div></div>'
+        +  '<div class="prog-row">'
+        +  '<button class="pbtn" onclick="togglePlay(''+idx+'')">'
+        +  '<svg id="pi-'+idx+'" viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M8 5v14l11-7z"/></svg>'
+        +  '<svg id="pau-'+idx+'" viewBox="0 0 24 24" fill="white" width="22" height="22" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'
+        +  '</button>'
+        +  '<div class="prog-track" onclick="seekClip(event,''+idx+'')">'
+        +  '<div class="prog-fill" id="pf-'+idx+'" style="width:0%"></div></div>'
+        +  '<span class="prog-time" id="pt-'+idx+'">0:00</span>'
+        +  '</div></div>'
+        +  '<div class="actions">'
+        +  '<button class="abtn" onclick="toggleLike(this,''+idx+'')">'
+        +  '<svg id="hrt-'+idx+'" viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+        +  '<span class="albl" id="lc-'+idx+'">٠</span></button>'
+        +  '<button class="abtn" onclick="openComments(''+idx+'')">'
+        +  '<svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+        +  '<span class="albl">٠</span></button>'
+        +  '<button class="abtn" onclick="shareClip()">'
+        +  '<svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>'
+        +  '<span class="albl">مشاركة</span></button>'
+        +  '<button class="abtn" onclick="bookmarkClip(this)">'
+        +  '<svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>'
+        +  '<span class="albl">حفظ</span></button>'
+        +  '<div class="vinyl p" id="vn-'+idx+'" style="background:conic-gradient(#064e3b,#22c55e,#064e3b,#22c55e)"><div class="vi"></div></div>'
+        +  '</div></div></div>';
+
+  div.innerHTML = inner;
+  feed.insertBefore(div, feed.firstChild);
+  feed.scrollTo({top:0, behavior:'smooth'});
+
+
+  // Wire media playback
+  var media = div.querySelector('#med-'+idx);
+  if(media) {
+    if(!S.mediaEls) S.mediaEls = {};
+    S.mediaEls[idx] = media;
+    // For video: play/pause controls the video
+    media.addEventListener('timeupdate', function(){
+      if(!media.duration) return;
+      var pct = (media.currentTime/media.duration)*100;
+      var el = document.getElementById('pf-'+idx); if(el) el.style.width = pct+'%';
+      var m = Math.floor(media.currentTime/60), s = Math.floor(media.currentTime%60);
+      var tel = document.getElementById('pt-'+idx);
+      if(tel) tel.textContent = m+':'+(s<10?'0':'')+s;
+    });
+    media.addEventListener('ended', function(){
+      pauseClip(idx);
+      var el = document.getElementById('pf-'+idx); if(el) el.style.width='0%';
+    });
+    // For video: tap on video area toggles play
+    if(clip.isVideo) {
+      media.addEventListener('click', function(){ togglePlay(idx); });
+    }
+  }
+}
+
+function addClipToGrid(clip) {
+  var grid = document.getElementById('pt-clips');
+  var empty = grid.querySelector('[style*="padding:40px"]');
+  if(empty) empty.remove();
+  var cg = grid.querySelector('.cgrid');
+  if(!cg){ cg = document.createElement('div'); cg.className='cgrid'; grid.appendChild(cg); }
+  var t = document.createElement('div');
+  t.className = 'cthumb'; t.style.background = clip.bg;
+  t.innerHTML = '<div class="cthumb-bg">'+(clip.isVideo?'🎬':'📖')+'</div><div class="cthumb-v"><svg viewBox="0 0 24 24" fill="white" width="10" height="10"><path d="M8 5v14l11-7z"/></svg>٠</div>';
+  cg.insertBefore(t, cg.firstChild);
+}
+
+// ══════════════ PROFILE ══════════════
+function renderProfile() {
+  var loggedIn = !!window._fbUser;
+  document.getElementById('p-guest').style.display = loggedIn ? 'none' : 'flex';
+  document.getElementById('p-user').style.display = loggedIn ? 'flex' : 'none';
+}
+
+function switchPTab(tab, el) {
+  document.querySelectorAll('.ptab').forEach(function(t){ t.classList.remove('on'); });
+  el.classList.add('on');
+  document.getElementById('pt-clips').style.display = tab==='clips' ? 'block' : 'none';
+  document.getElementById('pt-liked').style.display = tab==='liked' ? 'block' : 'none';
+  document.getElementById('pt-saved').style.display = tab==='saved' ? 'block' : 'none';
+}
+
+function openPMenu() {
+  document.getElementById('pmOvl').style.display = 'block';
+  document.getElementById('pmSheet').style.transform = 'translateY(0)';
+}
+function closePMenu() {
+  document.getElementById('pmOvl').style.display = 'none';
+  document.getElementById('pmSheet').style.transform = 'translateY(100%)';
+}
+
+// ══════════════ TOAST ══════════════
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(window._tt);
+  window._tt = setTimeout(function(){ t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(10px)'; }, 2500);
+}
+</script>
+
+<!-- ══ FIREBASE MODULE ══ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+import { getDatabase, ref, get, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+var app = initializeApp({
+  apiKey:"AIzaSyCDiG2BbOqVgZPzpKhzmrXje2mIbQUJ0Rg",
+  authDomain:"tikquran-370d4.firebaseapp.com",
+  databaseURL:"https://tikquran-370d4-default-rtdb.firebaseio.com",
+  projectId:"tikquran-370d4",
+  storageBucket:"tikquran-370d4.firebasestorage.app",
+  messagingSenderId:"542989808648",
+  appId:"1:542989808648:web:df738d4b075e6201804dbd"
+});
+var auth = getAuth(app);
+var db = getDatabase(app);
+window._fbDb = db;
+
+onAuthStateChanged(auth, async function(user) {
+  window._fbUser = user || null;
+  var nb = document.getElementById('nb-profile');
+  if(user) {
+    if(nb) nb.innerHTML = '<div style="position:relative;display:inline-block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><div style="position:absolute;top:-1px;left:-1px;width:8px;height:8px;border-radius:50%;background:#22c55e;border:1.5px solid #000"></div></div><span>حسابي</span>';
+    try {
+      var snap = await get(ref(db,'users/'+user.uid));
+      var u = snap.exists() ? snap.val() : {};
+      window._fbUserData = u;
+      var name = u.name || user.displayName || 'مستخدم';
+      var uname = u.username || (user.email||'').split('@')[0] || 'user';
+      var avatar = u.avatar || '🧔';
+      var el;
+      el=document.getElementById('p-av'); if(el) el.textContent=avatar;
+      el=document.getElementById('p-name'); if(el) el.textContent=name;
+      el=document.getElementById('p-handle'); if(el) el.textContent='@'+uname;
+      el=document.getElementById('p-handle2'); if(el) el.textContent='@'+uname;
+      el=document.getElementById('ps-clips'); if(el) el.textContent=u.clips||'٠';
+      el=document.getElementById('ps-fol'); if(el) el.textContent=u.followers||'٠';
+      el=document.getElementById('ps-fing'); if(el) el.textContent=u.following||'٠';
+      el=document.getElementById('ps-likes'); if(el) el.textContent=u.likes||'٠';
+      el=document.getElementById('cmtAv'); if(el) el.textContent=avatar;
+    } catch(e){ window._fbUserData={}; }
+    if(document.getElementById('page-profile').classList.contains('active')) renderProfile();
+  } else {
+    window._fbUserData = null;
+    if(nb) nb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>حسابي</span>';
+    if(document.getElementById('page-profile').classList.contains('active')) renderProfile();
+  }
+});
+
+window.doSignOut = async function() {
+  closePMenu();
+  await signOut(auth);
+  window._fbUser = null; window._fbUserData = null;
+  showToast('تم تسجيل الخروج 👋');
+  renderProfile();
+};
+
+// Load clips from DB
+try {
+  var snap = await get(query(ref(db,'clips'), orderByChild('createdAt'), limitToLast(20)));
+  if(snap.exists()) {
+    var clips = [];
+    snap.forEach(function(c){ clips.push(c.val()); });
+    clips.reverse().forEach(function(clip){ addClipToFeed(clip); });
+  }
+} catch(e){ console.warn('loadClips:',e.message); }
+</script>
+</body>
+</html>
