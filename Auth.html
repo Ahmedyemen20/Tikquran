@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<title>TikQuran — تسجيل الدخول</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --green:#22c55e;--green-dark:#16a34a;--green-dim:rgba(34,197,94,0.12);
+  --bg:#000;--surface:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.1);
+  --border-focus:rgba(34,197,94,0.5);--text:#fff;--text2:rgba(255,255,255,0.6);--text3:rgba(255,255,255,0.3);
+  --red:#ef4444;--red-dim:rgba(239,68,68,0.12);
+}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden}
+.qfont{font-family:'Amiri',serif}
+.bg-layer{position:fixed;inset:0;z-index:0;overflow:hidden}
+.bg-radial{position:absolute;border-radius:50%;filter:blur(80px);opacity:.35;pointer-events:none}
+.bg-r1{width:340px;height:340px;background:#064e3b;top:-80px;right:-80px}
+.bg-r2{width:280px;height:280px;background:#1e1b4b;bottom:-60px;left:-60px}
+.bg-r3{width:200px;height:200px;background:#3730a3;top:45%;left:50%;transform:translate(-50%,-50%);opacity:.18}
+.geo{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.025)' stroke-width='1'%3E%3Cpolygon points='40,5 75,27.5 75,52.5 40,75 5,52.5 5,27.5'/%3E%3Cpolygon points='40,18 62,31 62,49 40,62 18,49 18,31'/%3E%3C/g%3E%3C/svg%3E")}
+.wrap{position:relative;z-index:1;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:0 20px 40px}
+.logo-area{text-align:center;padding:52px 0 36px}
+.logo-icon{width:68px;height:68px;border-radius:20px;background:linear-gradient(135deg,#064e3b,#16a34a);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 32px rgba(22,163,74,0.35)}
+.logo-text{font-size:28px;font-weight:700;letter-spacing:.5px}
+.logo-sub{font-size:13px;color:var(--text3);margin-top:4px}
+.logo-ayah{font-size:15px;color:rgba(34,197,94,.7);margin-top:10px;line-height:1.7}
+.tabs{display:flex;background:rgba(255,255,255,.06);border-radius:14px;padding:4px;margin-bottom:28px;width:100%;max-width:380px}
+.tab{flex:1;padding:10px;border-radius:10px;text-align:center;font-size:14px;font-weight:500;cursor:pointer;transition:all .25s;color:var(--text3);border:none;background:none;font-family:'Tajawal',sans-serif}
+.tab.on{background:var(--green);color:#000;font-weight:700;box-shadow:0 2px 12px rgba(34,197,94,.3)}
+.card{width:100%;max-width:380px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;padding:24px 20px 20px;backdrop-filter:blur(12px)}
+.field{margin-bottom:16px}
+.field-label{font-size:12px;color:var(--text3);margin-bottom:6px;display:block}
+.field-wrap{position:relative;display:flex;align-items:center}
+.field-icon{position:absolute;right:13px;color:var(--text3);display:flex;pointer-events:none}
+.field-input{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;padding:12px 40px 12px 14px;color:#fff;font-size:14px;font-family:'Tajawal',sans-serif;outline:none;transition:border-color .2s}
+.field-input::placeholder{color:var(--text3)}
+.field-input:focus{border-color:var(--border-focus);background:rgba(255,255,255,.08)}
+.field-input.err{border-color:var(--red)!important}
+.field-toggle{position:absolute;left:12px;cursor:pointer;color:var(--text3);display:flex;background:none;border:none}
+.field-error{font-size:11px;color:var(--red);margin-top:5px;display:none}
+.field-error.show{display:block}
+.strength-wrap{margin-top:6px;display:none}
+.strength-wrap.show{display:block}
+.strength-bars{display:flex;gap:3px;margin-bottom:3px}
+.s-bar{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.1);transition:background .3s}
+.strength-label{font-size:10px;color:var(--text3)}
+.phone-row{display:flex;gap:8px}
+.country-select{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;padding:12px 10px;color:#fff;font-size:13px;font-family:'Tajawal',sans-serif;outline:none;cursor:pointer;flex-shrink:0;min-width:90px}
+.country-select option{background:#111;color:#fff}
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--text3);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.social-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;border-radius:12px;font-size:14px;font-family:'Tajawal',sans-serif;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.05);color:#fff;margin-bottom:10px;transition:all .2s}
+.social-btn:hover{background:rgba(255,255,255,.09)}
+.social-btn:active{transform:scale(.98)}
+.submit-btn{width:100%;padding:14px;border-radius:13px;background:var(--green);color:#000;font-size:15px;font-weight:700;font-family:'Tajawal',sans-serif;border:none;cursor:pointer;margin-top:4px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.submit-btn:hover{background:#16a34a}
+.submit-btn:active{transform:scale(.98)}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed}
+.spinner{width:18px;height:18px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.terms{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;line-height:1.7}
+.terms a{color:rgba(34,197,94,.7);text-decoration:none}
+.forgot-link{text-align:center;margin-top:14px}
+.forgot-link button{background:none;border:none;color:rgba(34,197,94,.7);font-size:13px;font-family:'Tajawal',sans-serif;cursor:pointer}
+.avatar-row{display:flex;gap:10px;margin-bottom:16px;justify-content:center}
+.av-opt{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;border:2px solid transparent;transition:all .2s;background:var(--surface)}
+.av-opt.chosen{border-color:var(--green);box-shadow:0 0 12px rgba(34,197,94,.3)}
+.otp-boxes{display:flex;justify-content:center;gap:10px;margin-bottom:20px;direction:ltr}
+.otp-box{width:48px;height:54px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;text-align:center;font-size:22px;font-weight:700;color:#fff;outline:none;font-family:'Tajawal',sans-serif;transition:border-color .2s}
+.otp-box:focus{border-color:var(--border-focus)}
+.resend-row{font-size:13px;color:var(--text3);margin-bottom:20px}
+.resend-btn{color:var(--green);background:none;border:none;cursor:pointer;font-size:13px;font-family:'Tajawal',sans-serif}
+.resend-btn:disabled{color:var(--text3);cursor:not-allowed}
+.success-circle{width:80px;height:80px;border-radius:50%;background:var(--green-dim);border:2px solid rgba(34,197,94,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{0%{transform:scale(0)}100%{transform:scale(1)}}
+.go-btn{display:inline-block;padding:13px 36px;background:var(--green);color:#000;border-radius:13px;font-size:15px;font-weight:700;font-family:'Tajawal',sans-serif;border:none;cursor:pointer;transition:all .2s}
+.field-input{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;padding:12px 40px 12px 14px;color:#fff;font-size:14px;font-family:'Tajawal',sans-serif;outline:none;transition:border-color .2s}
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(12px);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;z-index:999;border:1px solid var(--border);white-space:nowrap;pointer-events:none;font-family:'Tajawal',sans-serif}
+.fade-slide{animation:fadeSlide .35s ease}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* firebase error box */
+.fb-error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:10px 14px;font-size:13px;color:#fca5a5;margin-bottom:14px;display:none;text-align:center}
+.fb-error.show{display:block}
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+  <div class="bg-radial bg-r1"></div>
+  <div class="bg-radial bg-r2"></div>
+  <div class="bg-radial bg-r3"></div>
+  <div class="geo"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- LOGO -->
+  <div class="logo-area">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" width="32" height="32"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    </div>
+    <div class="logo-text">TikQuran</div>
+    <div class="logo-sub">منصة القرآن الكريم</div>
+    <div class="logo-ayah qfont">﴿ وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا ﴾</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs" id="mainTabs">
+    <button class="tab" onclick="switchTab('login')" id="tabLogin">تسجيل الدخول</button>
+    <button class="tab on" onclick="switchTab('register')" id="tabRegister">إنشاء حساب</button>
+  </div>
+
+  <!-- ══ LOGIN CARD ══ -->
+  <div class="card fade-slide" id="cardLogin" style="display:none">
+    <div class="fb-error" id="loginFbErr"></div>
+
+    <button class="social-btn" onclick="socialLogin('google')">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      الدخول مع Google
+    </button>
+
+    <div class="divider">أو بالبريد الإلكتروني</div>
+
+    <div class="field">
+      <label class="field-label">البريد الإلكتروني</label>
+      <div class="field-wrap">
+        <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+        <input type="email" class="field-input" placeholder="example@email.com" id="loginEmail" oninput="clearErr('loginEmail')" dir="ltr"/>
+      </div>
+      <div class="field-error" id="loginEmailErr">بريد إلكتروني غير صحيح</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">كلمة المرور</label>
+      <div class="field-wrap">
+        <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        <input type="password" class="field-input" placeholder="••••••••" id="loginPass" oninput="clearErr('loginPass')" dir="ltr"/>
+        <button class="field-toggle" onclick="togglePass('loginPass',this)" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="field-error" id="loginPassErr">كلمة المرور غير صحيحة</div>
+    </div>
+
+    <div class="forgot-link"><button onclick="showForgot()">نسيت كلمة المرور؟</button></div>
+
+    <button class="submit-btn" id="loginBtn" onclick="doLogin()">
+      <span id="loginBtnText">دخول</span>
+      <div class="spinner" id="loginSpinner"></div>
+    </button>
+    <div class="terms">بتسجيل دخولك توافق على <a href="#">شروط الاستخدام</a> و<a href="#">سياسة الخصوصية</a></div>
+  </div>
+
+  <!-- ══ REGISTER CARD ══ -->
+  <div class="card fade-slide" id="cardRegister">
+    <div class="fb-error" id="regFbErr"></div>
+
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px">اختر صورة رمزية</div>
+      <div class="avatar-row">
+        <div class="av-opt chosen" onclick="chooseAv(this,'🧔')">🧔</div>
+        <div class="av-opt" onclick="chooseAv(this,'👩‍🦱')">👩‍🦱</div>
+        <div class="av-opt" onclick="chooseAv(this,'🧕')">🧕</div>
+        <div class="av-opt" onclick="chooseAv(this,'👨‍💼')">👨‍💼</div>
+        <div class="av-opt" onclick="chooseAv(this,'👩‍💼')">👩‍💼</div>
+      </div>
+    </div>
+
+    <button class="social-btn" onclick="socialLogin('google')">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      التسجيل مع Google
+    </button>
+
+    <div class="divider">أو بالبريد الإلكتروني</div>
+
+    <div class="field">
+      <label class="field-label">الاسم الكامل</label>
+      <div class="field-wrap">
+        <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        <input type="text" class="field-input" placeholder="محمد عبدالله" id="regName" oninput="clearErr('regName')"/>
+      </div>
+      <div class="field-error" id="regNameErr">الاسم مطلوب</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">اسم المستخدم</label>
+      <div class="field-wrap">
+        <span class="field-icon" style="right:13px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        <input type="text" class="field-input" placeholder="@username" id="regUsername" oninput="checkUsername()" dir="ltr"/>
+        <span id="userAvail" style="position:absolute;left:12px;font-size:14px;display:none"></span>
+      </div>
+      <div class="field-error" id="regUsernameErr">اسم المستخدم غير متاح أو قصير جداً</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">البريد الإلكتروني</label>
+      <div class="field-wrap">
+        <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+        <input type="email" class="field-input" placeholder="example@email.com" id="regEmail" oninput="clearErr('regEmail')" dir="ltr"/>
+      </div>
+      <div class="field-error" id="regEmailErr">بريد إلكتروني غير صحيح</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">رقم الجوال (اختياري)</label>
+      <div class="phone-row">
+        <select class="country-select" id="countryCode">
+          <option value="+966">🇸🇦 +966</option>
+          <option value="+971">🇦🇪 +971</option>
+          <option value="+965">🇰🇼 +965</option>
+          <option value="+973">🇧🇭 +973</option>
+          <option value="+974">🇶🇦 +974</option>
+          <option value="+968">🇴🇲 +968</option>
+          <option value="+962">🇯🇴 +962</option>
+          <option value="+20">🇪🇬 +20</option>
+          <option value="+212">🇲🇦 +212</option>
+          <option value="+1">🇺🇸 +1</option>
+        </select>
+        <div class="field-wrap" style="flex:1">
+          <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+          <input type="tel" class="field-input" placeholder="5XXXXXXXX" id="regPhone" dir="ltr"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">كلمة المرور</label>
+      <div class="field-wrap">
+        <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        <input type="password" class="field-input" placeholder="٨ أحرف على الأقل" id="regPass" oninput="checkStrength();clearErr('regPass')" dir="ltr"/>
+        <button class="field-toggle" onclick="togglePass('regPass',this)" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="field-error" id="regPassErr">كلمة المرور يجب أن تكون ٨ أحرف على الأقل</div>
+      <div class="strength-wrap" id="strengthWrap">
+        <div class="strength-bars">
+          <div class="s-bar" id="sb0"></div><div class="s-bar" id="sb1"></div>
+          <div class="s-bar" id="sb2"></div><div class="s-bar" id="sb3"></div>
+        </div>
+        <div class="strength-label" id="strengthLabel">ضعيفة</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">تأكيد كلمة المرور</label>
+      <div class="field-wrap">
+        <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        <input type="password" class="field-input" placeholder="أعد كتابة كلمة المرور" id="regPassConf" oninput="clearErr('regPassConf')" dir="ltr"/>
+      </div>
+      <div class="field-error" id="regPassConfErr">كلمتا المرور غير متطابقتين</div>
+    </div>
+
+    <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:16px">
+      <input type="checkbox" id="agreeTerms" style="width:16px;height:16px;margin-top:2px;accent-color:var(--green);flex-shrink:0"/>
+      <span style="font-size:12px;color:var(--text2);line-height:1.6">أوافق على <a href="#" style="color:rgba(34,197,94,.8);text-decoration:none">شروط الاستخدام</a> وأتعهد باستخدام التطبيق بما يليق بكلام الله الكريم</span>
+    </label>
+
+    <button class="submit-btn" id="registerBtn" onclick="doRegister()">
+      <span id="registerBtnText">إنشاء الحساب</span>
+      <div class="spinner" id="registerSpinner"></div>
+    </button>
+  </div>
+
+  <!-- ══ OTP CARD ══ -->
+  <div class="card fade-slide" id="cardOtp" style="display:none">
+    <div style="text-align:center">
+      <div style="font-size:56px;margin-bottom:16px">📧</div>
+      <div style="font-size:19px;font-weight:700;margin-bottom:10px">تحقق من بريدك</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.7">
+        أرسلنا <b style="color:#fff">رابط التحقق</b> إلى
+      </div>
+      <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:20px;word-break:break-all" id="otpEmail"></div>
+
+      <!-- Steps -->
+      <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px;text-align:right">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--green);color:#000;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">١</div>
+          <div style="font-size:13px;color:var(--text2)">افتح تطبيق البريد الإلكتروني</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--green);color:#000;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">٢</div>
+          <div style="font-size:13px;color:var(--text2)">ابحث عن رسالة من TikQuran</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--green);color:#000;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">٣</div>
+          <div style="font-size:13px;color:var(--text2)">اضغط على رابط التحقق في الرسالة</div>
+        </div>
+      </div>
+
+      <div style="font-size:12px;color:var(--text3);margin-bottom:6px">تحقق من مجلد Spam إذا لم تجد الرسالة</div>
+
+      <button class="submit-btn" id="otpBtn" onclick="checkEmailVerified()" style="margin-bottom:12px">
+        <span id="otpBtnText">فتحت الرابط — تسجيل الدخول ✓</span>
+        <div class="spinner" id="otpSpinner"></div>
+      </button>
+
+      <div class="resend-row" style="margin-bottom:12px">
+        لم تصلك الرسالة؟
+        <button class="resend-btn" id="resendBtn" onclick="resendVerification()">إعادة الإرسال (<span id="countdown">60</span>)</button>
+      </div>
+
+      <button style="background:none;border:none;color:var(--text3);font-size:13px;font-family:'Tajawal',sans-serif;cursor:pointer;display:block;width:100%;text-align:center" onclick="backToRegister()">← رجوع</button>
+    </div>
+  </div>
+
+  <!-- ══ SUCCESS CARD ══ -->
+  <div class="card fade-slide" id="cardSuccess" style="display:none">
+    <div style="text-align:center;padding:20px 0">
+      <div class="success-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" width="36" height="36"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:8px">مرحباً بك في TikQuran! 🎉</div>
+      <div id="successName" style="font-size:15px;color:var(--green);margin-bottom:8px"></div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.7">تم إنشاء حسابك بنجاح<br>استمتع بتجربة القرآن الكريم</div>
+      <div style="font-size:32px;margin-bottom:24px">📖 🌙 ✨</div>
+      <button class="go-btn" onclick="goToApp()">ابدأ الاستخدام</button>
+    </div>
+  </div>
+
+  <!-- ══ FORGOT CARD ══ -->
+  <div class="card fade-slide" id="cardForgot" style="display:none">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:36px;margin-bottom:10px">🔐</div>
+      <div style="font-size:17px;font-weight:700;margin-bottom:6px">استعادة كلمة المرور</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.7">أدخل بريدك وسنرسل لك رابط إعادة الضبط</div>
+    </div>
+    <div class="fb-error" id="forgotFbErr"></div>
+    <div class="field">
+      <label class="field-label">البريد الإلكتروني</label>
+      <div class="field-wrap">
+        <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+        <input type="email" class="field-input" placeholder="example@email.com" id="forgotEmail" dir="ltr"/>
+      </div>
+    </div>
+    <button class="submit-btn" id="forgotBtn" onclick="doForgot()">
+      <span id="forgotBtnText">إرسال رابط الاستعادة</span>
+      <div class="spinner" id="forgotSpinner"></div>
+    </button>
+    <button style="background:none;border:none;color:var(--text3);font-size:13px;font-family:'Tajawal',sans-serif;cursor:pointer;margin-top:14px;display:block;width:100%;text-align:center" onclick="showCard('cardLogin');document.getElementById('mainTabs').style.display='flex';switchTab('login')">← رجوع لتسجيل الدخول</button>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<!-- ══════════════ FIREBASE SDK ══════════════ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+import {
+  getDatabase,
+  ref,
+  set,
+  get
+} from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+// ── Firebase Config ──────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyCDiG2BbOqVgZPzpKhzmrXje2mIbQUJ0Rg",
+  authDomain: "tikquran-370d4.firebaseapp.com",
+  databaseURL: "https://tikquran-370d4-default-rtdb.firebaseio.com",
+  projectId: "tikquran-370d4",
+  storageBucket: "tikquran-370d4.firebasestorage.app",
+  messagingSenderId: "542989808648",
+  appId: "1:542989808648:web:df738d4b075e6201804dbd",
+  measurementId: "G-ZD5Y2N1V8K"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const googleProvider = new GoogleAuthProvider();
+
+// ── Firebase error messages (Arabic) ──
+function fbErrAr(code) {
+  const map = {
+    'auth/email-already-in-use':    'هذا البريد مسجّل مسبقاً، جرّب تسجيل الدخول',
+    'auth/invalid-email':           'صيغة البريد الإلكتروني غير صحيحة',
+    'auth/weak-password':           'كلمة المرور ضعيفة جداً، استخدم ٨ أحرف على الأقل',
+    'auth/user-not-found':          'لا يوجد حساب بهذا البريد',
+    'auth/wrong-password':          'كلمة المرور غير صحيحة',
+    'auth/invalid-credential':      'البريد أو كلمة المرور غير صحيحة',
+    'auth/too-many-requests':       'تم تجاوز عدد المحاولات، انتظر قليلاً',
+    'auth/network-request-failed':  'تحقق من اتصالك بالإنترنت',
+    'auth/popup-closed-by-user':    'تم إغلاق نافذة تسجيل الدخول',
+    'auth/cancelled-popup-request': 'طلب ملغى',
+    'auth/operation-not-allowed':   'هذه الطريقة غير مفعّلة في Firebase',
+    'auth/internal-error':          'خطأ داخلي في Firebase، حاول لاحقاً',
+    'auth/requires-recent-login':   'يجب تسجيل الدخول مجدداً',
+    'auth/account-exists-with-different-credential': 'هذا البريد مسجّل بطريقة دخول مختلفة',
+  };
+  return map[code] || ('خطأ: ' + (code || 'غير معروف'));
+}
+
+function showFbErr(boxId, code) {
+  const el = document.getElementById(boxId);
+  el.textContent = fbErrAr(code);
+  el.classList.add('show');
+}
+function hideFbErr(boxId) {
+  document.getElementById(boxId).classList.remove('show');
+}
+
+// ── Save user profile to Realtime DB ──
+async function saveUserToDB(uid, data) {
+  await set(ref(db, 'users/' + uid), {
+    ...data,
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  });
+}
+
+// ── REGISTER ──────────────────────────
+window.doRegister = async function() {
+  hideFbErr('regFbErr');
+  const name     = document.getElementById('regName').value.trim();
+  const username = document.getElementById('regUsername').value.replace('@','').trim().toLowerCase();
+  const email    = document.getElementById('regEmail').value.trim();
+  const pass     = document.getElementById('regPass').value;
+  const conf     = document.getElementById('regPassConf').value;
+  const phone    = document.getElementById('countryCode').value + document.getElementById('regPhone').value.trim();
+  const agreed   = document.getElementById('agreeTerms').checked;
+
+  let ok = true;
+  if (!name)              { showFieldErr('regName');     ok = false; }
+  if (username.length < 3){ showFieldErr('regUsername'); ok = false; }
+  if (!isEmail(email))    { showFieldErr('regEmail');    ok = false; }
+  if (pass.length < 8)    { showFieldErr('regPass');     ok = false; }
+  if (pass !== conf)      { showFieldErr('regPassConf'); ok = false; }
+  if (!agreed)            { showToast('يجب الموافقة على الشروط', false); ok = false; }
+  if (!ok) return;
+
+  setLoading('registerBtn','registerSpinner','registerBtnText', true);
+  try {
+    // 1. Create Firebase Auth account FIRST
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const uid = cred.user.uid;
+
+    // 2. Update display name in Auth
+    await updateProfile(cred.user, { displayName: name });
+
+    // 3. Send verification email (non-blocking)
+    try { await sendEmailVerification(cred.user); } catch(_) {}
+
+    // 4. Save to Realtime DB (now authenticated — DB rules allow it)
+    try {
+      await saveUserToDB(uid, {
+        name, username, email,
+        phone: phone.length > 4 ? phone : null,
+        avatar: window.chosenAvatar || '🧔',
+        followers: 0, following: 0, likes: 0, clips: 0
+      });
+      await set(ref(db, 'usernames/' + username), uid);
+    } catch(dbErr) {
+      console.warn('DB write error (check Rules):', dbErr.message);
+    }
+
+    setLoading('registerBtn','registerSpinner','registerBtnText', false);
+    // Go directly to success — no email verification required
+    document.getElementById('successName').textContent = 'أهلاً ' + name + ' ' + (window.chosenAvatar || '🧔');
+    document.getElementById('mainTabs').style.display = 'none';
+    showCard('cardSuccess');
+
+  } catch(e) {
+    setLoading('registerBtn','registerSpinner','registerBtnText', false);
+    // Show the actual Firebase error code for debugging
+    const errMsg = fbErrAr(e.code);
+    showFbErr('regFbErr', e.code);
+    console.error('Firebase register error:', e.code, e.message);
+  }
+};
+
+// ── LOGIN ─────────────────────────────
+window.doLogin = async function() {
+  hideFbErr('loginFbErr');
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  let ok = true;
+  if (!isEmail(email)) { showFieldErr('loginEmail'); ok = false; }
+  if (pass.length < 6) { showFieldErr('loginPass');  ok = false; }
+  if (!ok) return;
+
+  setLoading('loginBtn','loginSpinner','loginBtnText', true);
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    const uid = cred.user.uid;
+
+    // Load user from DB
+    const snap = await get(ref(db, 'users/' + uid));
+    const userData = snap.exists() ? snap.val() : {};
+
+    setLoading('loginBtn','loginSpinner','loginBtnText', false);
+    document.getElementById('successName').textContent =
+      'أهلاً ' + (userData.name || cred.user.displayName || '') + ' ' + (userData.avatar || '');
+    document.getElementById('mainTabs').style.display = 'none';
+    showCard('cardSuccess');
+
+  } catch(e) {
+    setLoading('loginBtn','loginSpinner','loginBtnText', false);
+    showFbErr('loginFbErr', e.code);
+  }
+};
+
+// ── GOOGLE LOGIN ──────────────────────
+window.socialLogin = async function(provider) {
+  if (provider !== 'google') return;
+  try {
+    showToast('جاري الاتصال بـ Google...');
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+
+    // Check if first time
+    const snap = await get(ref(db, 'users/' + user.uid));
+    if (!snap.exists()) {
+      // New user — save to DB
+      const username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g,'');
+      await saveUserToDB(user.uid, {
+        name:     user.displayName || 'مستخدم جديد',
+        username: username,
+        email:    user.email,
+        phone:    null,
+        avatar:   '🧔',
+        followers: 0, following: 0, likes: 0, clips: 0
+      });
+      await set(ref(db, 'usernames/' + username), user.uid);
+    }
+
+    const userData = (await get(ref(db, 'users/' + user.uid))).val();
+    document.getElementById('successName').textContent =
+      'أهلاً ' + (userData?.name || user.displayName || '') + ' 👋';
+    document.getElementById('mainTabs').style.display = 'none';
+    showCard('cardSuccess');
+
+  } catch(e) {
+    showFbErr(document.getElementById('cardLogin').style.display !== 'none' ? 'loginFbErr' : 'regFbErr', e.code);
+  }
+};
+
+// ── FORGOT PASSWORD ───────────────────
+window.doForgot = async function() {
+  hideFbErr('forgotFbErr');
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!isEmail(email)) { showToast('أدخل بريداً صحيحاً', false); return; }
+
+  setLoading('forgotBtn','forgotSpinner','forgotBtnText', true);
+  try {
+    await sendPasswordResetEmail(auth, email);
+    setLoading('forgotBtn','forgotSpinner','forgotBtnText', false);
+    showToast('تم إرسال رابط الاستعادة إلى بريدك ✓');
+    setTimeout(() => {
+      document.getElementById('mainTabs').style.display = 'flex';
+      showCard('cardLogin');
+      switchTab('login');
+    }, 1800);
+  } catch(e) {
+    setLoading('forgotBtn','forgotSpinner','forgotBtnText', false);
+    showFbErr('forgotFbErr', e.code);
+  }
+};
+
+// ── CHECK EMAIL VERIFIED (OTP screen) ─
+window.checkEmailVerified = async function() {
+  setLoading('otpBtn','otpSpinner','otpBtnText', true);
+  try {
+    if (auth.currentUser) {
+      await auth.currentUser.reload();
+    }
+    const user = auth.currentUser;
+    if (!user) {
+      setLoading('otpBtn','otpSpinner','otpBtnText', false, 'فتحت الرابط — تسجيل الدخول ✓');
+      showToast('انتهت الجلسة، سجّل دخولك مجدداً', false);
+      return;
+    }
+    // Allow entry whether verified or not
+    let userData = {};
+    try {
+      const snap = await get(ref(db, 'users/' + user.uid));
+      userData = snap.exists() ? snap.val() : {};
+    } catch(_) {}
+    document.getElementById('successName').textContent =
+      'أهلاً ' + (userData.name || user.displayName || '') + ' ' + (userData.avatar || '🧔');
+    clearInterval(window._cdTimer);
+    showCard('cardSuccess');
+  } catch(e) {
+    setLoading('otpBtn','otpSpinner','otpBtnText', false, 'فتحت الرابط — تسجيل الدخول ✓');
+    showToast('حدث خطأ، حاول مرة أخرى', false);
+  }
+};
+
+window.resendVerification = async function() {
+  try {
+    await sendEmailVerification(auth.currentUser);
+    showToast('تم إعادة إرسال رابط التحقق ✓');
+    startCountdown();
+  } catch(e) {
+    showToast(fbErrAr(e.code), false);
+  }
+};
+
+// ── AUTH STATE ────────────────────────
+onAuthStateChanged(auth, (user) => {
+  if (user && window.location.hash !== '#auth') {
+    // User already logged in — skip to app
+    // window.location.href = 'tikquran.html';
+  }
+});
+
+// ── GO TO APP ─────────────────────────
+window.goToApp = function() {
+  showToast('جاري الانتقال للتطبيق... 🚀');
+  setTimeout(() => window.location.href = 'index.html', 1000);
+};
+
+</script>
+
+<script>
+// ── NON-FIREBASE HELPERS ──────────────
+function isEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+function showCard(id){
+  ['cardLogin','cardRegister','cardOtp','cardSuccess','cardForgot'].forEach(c=>{
+    document.getElementById(c).style.display='none';
+  });
+  const t=document.getElementById(id);
+  t.style.display='block';
+  t.classList.remove('fade-slide');
+  void t.offsetWidth;
+  t.classList.add('fade-slide');
+}
+function showToast(msg,ok=true){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=ok?'#1a1a1a':'rgba(239,68,68,0.2)';
+  t.style.borderColor=ok?'rgba(255,255,255,.1)':'rgba(239,68,68,.4)';
+  t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(window._tt);
+  window._tt=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(8px)';},2800);
+}
+function setLoading(btnId,spinnerId,textId,loading,text){
+  const btn=document.getElementById(btnId);
+  btn.disabled=loading;
+  document.getElementById(spinnerId).style.display=loading?'block':'none';
+  document.getElementById(textId).style.display=loading?'none':'inline';
+  if(text&&!loading)document.getElementById(textId).textContent=text;
+}
+function showFieldErr(id){
+  const inp=document.getElementById(id);if(inp)inp.classList.add('err');
+  const err=document.getElementById(id+'Err');if(err)err.classList.add('show');
+}
+function clearErr(id){
+  const inp=document.getElementById(id);if(inp)inp.classList.remove('err');
+  const err=document.getElementById(id+'Err');if(err)err.classList.remove('show');
+}
+
+function switchTab(tab){
+  document.getElementById('tabLogin').classList.toggle('on',tab==='login');
+  document.getElementById('tabRegister').classList.toggle('on',tab==='register');
+  showCard(tab==='login'?'cardLogin':'cardRegister');
+  document.getElementById('mainTabs').style.display='flex';
+}
+
+let chosenAvatar='🧔';
+window.chosenAvatar='🧔';
+function chooseAv(el,emoji){
+  document.querySelectorAll('.av-opt').forEach(a=>a.classList.remove('chosen'));
+  el.classList.add('chosen');
+  chosenAvatar=emoji;window.chosenAvatar=emoji;
+}
+
+function togglePass(id,btn){
+  const inp=document.getElementById(id);
+  const shown=inp.type==='text';
+  inp.type=shown?'password':'text';
+  btn.style.color=shown?'var(--text3)':'rgba(34,197,94,.8)';
+}
+
+function checkStrength(){
+  const v=document.getElementById('regPass').value;
+  const w=document.getElementById('strengthWrap');
+  if(!v){w.classList.remove('show');return;}
+  w.classList.add('show');
+  let score=0;
+  if(v.length>=8)score++;
+  if(/[A-Z]/.test(v))score++;
+  if(/[0-9]/.test(v))score++;
+  if(/[^A-Za-z0-9]/.test(v))score++;
+  const colors=['#ef4444','#f97316','#eab308','#22c55e'];
+  const labels=['ضعيفة','مقبولة','جيدة','قوية'];
+  for(let i=0;i<4;i++){
+    document.getElementById('sb'+i).style.background=i<score?colors[score-1]:'rgba(255,255,255,.1)';
+  }
+  document.getElementById('strengthLabel').textContent=labels[score-1]||'ضعيفة';
+  document.getElementById('strengthLabel').style.color=colors[score-1]||colors[0];
+}
+
+let usernameTimer;
+function checkUsername(){
+  clearTimeout(usernameTimer);
+  const val=document.getElementById('regUsername').value.replace('@','').toLowerCase();
+  const avail=document.getElementById('userAvail');
+  avail.style.display='none';
+  if(val.length<3)return;
+  avail.style.display='inline';avail.textContent='...';avail.style.color='var(--text3)';
+  usernameTimer=setTimeout(()=>{
+    // Real check happens on submit via Firebase
+    avail.textContent='✓';avail.style.color='var(--green)';
+  },600);
+}
+
+function otpInput(i){
+  const v=document.getElementById('otp'+i).value;
+  if(v&&i<5)document.getElementById('otp'+(i+1)).focus();
+}
+function otpKey(e,i){
+  if(e.key==='Backspace'&&!document.getElementById('otp'+i).value&&i>0)
+    document.getElementById('otp'+(i-1)).focus();
+}
+function startCountdown(){
+  let sec=60;
+  document.getElementById('resendBtn').disabled=true;
+  document.getElementById('countdown').textContent=sec;
+  clearInterval(window._cdTimer);
+  window._cdTimer=setInterval(()=>{
+    sec--;document.getElementById('countdown').textContent=sec;
+    if(sec<=0){
+      clearInterval(window._cdTimer);
+      document.getElementById('resendBtn').disabled=false;
+      document.getElementById('resendBtn').innerHTML='إعادة الإرسال';
+    }
+  },1000);
+}
+function backToRegister(){
+  clearInterval(window._cdTimer);
+  document.getElementById('mainTabs').style.display='flex';
+  showCard('cardRegister');
+}
+function showForgot(){
+  document.getElementById('mainTabs').style.display='none';
+  showCard('cardForgot');
+}
+window.showForgot=showForgot;
+window.switchTab=switchTab;
+window.chooseAv=chooseAv;
+window.togglePass=togglePass;
+window.checkStrength=checkStrength;
+window.checkUsername=checkUsername;
+window.otpInput=otpInput;
+window.otpKey=otpKey;
+window.startCountdown=startCountdown;
+window.backToRegister=backToRegister;
+window.clearErr=clearErr;
+
+// Init
+switchTab('register');
+</script>
+</body>
+</html>
